@@ -9,26 +9,32 @@ import android.os.BatteryManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class BatteryUpdater extends Service {
     public static final String BATTERY_LEVEL_CHANGED = "BatteryUpdater.BATTERY_LEVEL_CHANGED";
     public static final String BATTERY_LEVEL = "BatteryUpdater.BATTERY_LEVEL";
 
-    private static final String LOG_TAG = "BatteryUpdater";
+    protected static final String LOG_TAG = "BatteryUpdater";
 
-    BatteryManager batteryManager;
-    BroadcastReceiver batteryUpdatesReceiver;
+    protected BatteryManager batteryManager;
+    protected BroadcastReceiver batteryUpdatesReceiver;
+    protected DatabaseReference deviceDb;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        deviceDb = FirebaseDatabase.getInstance().getReference("device");
+        batteryManager = (BatteryManager)getSystemService(BATTERY_SERVICE);
+
+        updateBatteryLevel();
+
         listenToBatteryChanges();
     }
 
     protected void listenToBatteryChanges() {
-        batteryManager = (BatteryManager)getSystemService(BATTERY_SERVICE);
-
         batteryUpdatesReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -45,6 +51,10 @@ public class BatteryUpdater extends Service {
         Log.d(LOG_TAG, "Battery level changed to: " + batteryLevel);
 
         notifyListenersOnBatteryLevel(batteryLevel);
+
+        String deviceId = "1234-5678-ABCD"; // TODO: assign unique id to the phone, or retrieve it if it was already created
+
+        deviceDb.child(deviceId).child("batteryLevel").setValue(batteryLevel);
     }
 
     protected void notifyListenersOnBatteryLevel(int batteryLevel) {
