@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Phone Charge</string>
+    <string name="charge_level_label">Phone Charge Level:</string>
+    <string name="charge_loading">…loading</string>
+</resources>
